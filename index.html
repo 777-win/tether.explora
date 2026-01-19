@@ -1,537 +1,650 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>ElectricInvest — Demo Investment Dashboard</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
-  <style>
-    :root{
-      --bg:#0f1724;
-      --card:#0b1220;
-      --muted:#94a3b8;
-      --accent:#00d1b2;
-      --accent-2:#6ee7b7;
-      --glass: rgba(255,255,255,0.03);
-      --danger:#ff6b6b;
-      --white:#e6eef8;
-      --glass-2: rgba(255,255,255,0.02);
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;background:linear-gradient(180deg,#071028 0%, #071322 60%, #04101a 100%);color:var(--white);-webkit-font-smoothing:antialiased}
-    .container{max-width:1100px;margin:36px auto;padding:24px}
-    header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
-    .brand{display:flex;align-items:center;gap:12px}
-    .logo{
-      width:54px;height:54px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent-2));
-      display:flex;align-items:center;justify-content:center;font-weight:800;color:#012;letter-spacing:1px;font-size:18px;box-shadow:0 6px 30px rgba(0,210,178,0.12);
-    }
-    h1{font-size:20px;margin:0}
-    .tag{color:var(--muted);font-size:13px}
-    nav{display:flex;gap:12px;align-items:center}
-    .btn{background:var(--accent);color:#042024;padding:10px 14px;border-radius:8px;font-weight:600;border:none;cursor:pointer;box-shadow:0 8px 24px rgba(0,210,178,0.08)}
-    .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--white)}
-    .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:14px;padding:18px;box-shadow:0 6px 30px rgba(2,6,23,0.6);border:1px solid rgba(255,255,255,0.02)}
-    .grid{display:grid;grid-template-columns: 1fr 360px;gap:18px}
-    .holdings{padding:18px}
-    .balance-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
-    .balance{font-size:28px;font-weight:700}
-    .sub{color:var(--muted);font-size:13px}
-    .coins{display:flex;flex-direction:column;gap:10px;margin-top:12px}
-    .coin{display:flex;align-items:center;justify-content:space-between;padding:10px;border-radius:10px;background:var(--glass-2);border:1px solid rgba(255,255,255,0.02)}
-    .coin .left{display:flex;align-items:center;gap:12px}
-    .avatar{width:44px;height:44;border-radius:10px;background:rgba(255,255,255,0.03);display:inline-flex;align-items:center;justify-content:center;font-weight:700}
-    .coin .meta{display:flex;flex-direction:column}
-    .plan-btn{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
-    .plan{background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.02));padding:14px;border-radius:10px;border:1px solid rgba(255,255,255,0.02);cursor:pointer}
-    .plan.selected{outline:2px solid rgba(0,209,178,0.18);box-shadow:0 12px 30px rgba(0,209,178,0.05)}
-    footer{margin-top:24px;color:var(--muted);font-size:13px;text-align:center}
-    /* modal */
-    .modal-backdrop{position:fixed;inset:0;background:linear-gradient(0deg, rgba(2,6,23,0.6), rgba(2,6,23,0.8));display:none;align-items:center;justify-content:center;padding:18px;z-index:80}
-    .modal{width:100%;max-width:760px;background:linear-gradient(180deg,#071226 0%, #041222 100%);border-radius:14px;padding:20px;border:1px solid rgba(255,255,255,0.03)}
-    .modal h2{margin:0 0 8px 0}
-    .row{display:flex;gap:12px;align-items:center}
-    .field{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
-    input[type="text"], input[type="email"], input[type="password"], select{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:10px;border-radius:8px;color:var(--white);outline:none}
-    .small{font-size:13px;color:var(--muted)}
-    .muted{color:var(--muted)}
-    .center{display:flex;align-items:center;justify-content:center}
-    .logo-spin{width:120px;height:120px;border-radius:20px;background:linear-gradient(135deg,var(--accent),#3aeac1);display:flex;align-items:center;justify-content:center;color:#042024;font-weight:800;font-size:20px;box-shadow:0 16px 40px rgba(0,210,178,0.14)}
-    .spin{animation:spin 6s linear}
-    @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
-    .hidden{display:none}
-    .copy{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.03);padding:8px;border-radius:8px;cursor:pointer}
-    .preview{max-width:160px;border-radius:8px;border:1px solid rgba(255,255,255,0.03);display:block;margin-top:8px}
-    /* forms panel */
-    .auth{max-width:420px;margin-left:auto}
-    .auth .card{padding:20px}
-    .linklike{background:transparent;border:none;color:var(--accent);cursor:pointer;font-weight:600}
-    .small-muted{font-size:12px;color:var(--muted)}
-    /* responsive */
-    @media (max-width:950px){
-      .grid{grid-template-columns:1fr;align-items:stretch}
-      .auth{margin:0;padding-top:12px}
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <header>
-      <div class="brand">
-        <div class="logo" aria-hidden>EV</div>
-        <div>
-          <h1>ElectricInvest — Demo</h1>
-          <div class="tag">Design demo: modern EV-inspired investment dashboard (Simulation only)</div>
-        </div>
-      </div>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>T Stock — Tesla Personal Plans</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, h3, h4 { font-family: 'Outfit', sans-serif; }
 
-      <nav id="top-nav">
-        <div class="sub muted" id="welcome-text">Welcome — please register or log in</div>
-        <div style="display:flex;gap:10px">
-          <button class="btn" id="open-register">Register</button>
-          <button class="btn ghost" id="open-login">Login</button>
-        </div>
-      </nav>
-    </header>
-
-    <main class="grid">
-      <section class="card holdings">
-        <div class="balance-row">
-          <div>
-            <div class="sub">Portfolio Balance</div>
-            <div class="balance" id="usd-balance">$0.00</div>
-            <div class="sub small-muted">MINIMUM INVESTMENT: $500 — Demo display only</div>
-          </div>
-          <div style="text-align:right">
-            <button class="btn" id="fund-account-btn">Fund Account</button>
-            <div style="margin-top:8px" class="small-muted">Your funds are simulated in this demo</div>
-          </div>
-        </div>
-
-        <div class="coins" id="coins-list">
-          <div class="coin">
-            <div class="left">
-              <div class="avatar">₿</div>
-              <div class="meta">
-                <div style="font-weight:700">Bitcoin (BTC)</div>
-                <div class="small muted">Holding: 0.00000000</div>
-              </div>
-            </div>
-            <div style="text-align:right">
-              <div style="font-weight:700">$0.00</div>
-              <div class="small muted">Price demo</div>
-            </div>
-          </div>
-          <div class="coin">
-            <div class="left">
-              <div class="avatar">Ξ</div>
-              <div class="meta">
-                <div style="font-weight:700">Ethereum (ETH)</div>
-                <div class="small muted">Holding: 0.00000000</div>
-              </div>
-            </div>
-            <div style="text-align:right">
-              <div style="font-weight:700">$0.00</div>
-              <div class="small muted">Price demo</div>
-            </div>
-          </div>
-          <div class="coin">
-            <div class="left">
-              <div class="avatar">◈</div>
-              <div class="meta">
-                <div style="font-weight:700">USDT</div>
-                <div class="small muted">Holding: 0.00</div>
-              </div>
-            </div>
-            <div style="text-align:right">
-              <div style="font-weight:700">$0.00</div>
-              <div class="small muted">Stable</div>
-            </div>
-          </div>
-          <div class="coin">
-            <div class="left">
-              <div class="avatar">ⓑ</div>
-              <div class="meta">
-                <div style="font-weight:700">BNB</div>
-                <div class="small muted">Holding: 0.00000000</div>
-              </div>
-            </div>
-            <div style="text-align:right">
-              <div style="font-weight:700">$0.00</div>
-              <div class="small muted">Price demo</div>
-            </div>
-          </div>
-        </div>
-
-        <div style="margin-top:18px" class="sub muted">Investment Plans (demo only)</div>
-        <div class="plan-btn" id="plans-panel">
-          <!-- plans inserted by JS -->
-        </div>
-      </section>
-
-      <aside class="auth card">
-        <div id="auth-panel">
-          <h3 style="margin-top:0">Account</h3>
-          <div class="small-muted">Register, log in and manage your portfolio.</div>
-
-          <div style="margin-top:12px" id="auth-actions">
-            <button class="btn" id="open-register-2">Create Account</button>
-            <button class="btn ghost" id="open-login-2">Sign In</button>
-            <div style="margin-top:12px" class="small-muted">powered by TESLA.</div>
-          </div>
-
-          <div id="account-info" class="hidden" style="margin-top:14px">
-            <div style="display:flex;justify-content:space-between;align-items:center">
-              <div>
-                <div style="font-size:16px;font-weight:700" id="acct-name">User</div>
-                <div class="small-muted" id="acct-email">email@example.com</div>
-              </div>
-              <div>
-                <button class="btn ghost" id="logout-btn">Logout</button>
-              </div>
-            </div>
-            <div style="margin-top:12px">
-              <div class="small-muted">Holdings overview</div>
-              <div style="margin-top:8px" id="mini-holdings">
-                <div class="small-muted">BTC: 0.00000000</div>
-                <div class="small-muted">ETH: 0.00000000</div>
-                <div class="small-muted">USDT: 0.00</div>
-              </div>
-            </div>
-          </div>
-
-        </div>
-      </aside>
-    </main>
-
-    <footer>
-      <div style="max-width:900px;margin:12px auto;color:var(--muted)">
-        Tesla inc 2026®| all rights reserved 
-      </div>
-    </footer>
-  </div>
-
-  <!-- Modal backdrop -->
-  <div id="modal-root" class="modal-backdrop" role="dialog" aria-modal="true">
-    <div class="modal" id="modal">
-      <!-- dynamic content -->
-    </div>
-  </div>
-
-  <script>
-    // Demo app: localStorage-based users & session
-    (function(){
-      const plans = [
-        {id:1,label:'🔆 INVEST $500 GET $5,000',min:500},
-        {id:2,label:'🔰 INVEST $1000 GET $15,000',min:1000},
-        {id:3,label:'🔰 INVEST $2000 GET $30,000',min:2000},
-        {id:4,label:'🔰 INVEST $3000 GET $45,000',min:3000},
-        {id:5,label:'🔰 INVEST $4000 GET $60,000',min:4000},
-        {id:6,label:'🔰 INVEST $5000 GET $75,000',min:5000},
-        {id:7,label:'🔰 INVEST $10,000 GET $150,000',min:10000},
-        {id:8,label:'💎 1BTC earn 5BTC',min:0},
-        {id:9,label:'💎 2BTC earn 10BTC',min:0},
-        {id:10,label:'💎 3BTC earn 15BTC',min:0},
-        {id:11,label:'💎 4BTC earn 20BTC',min:0},
-        {id:12,label:'💎 5BTC earn 25BTC',min:0}
-      ];
-      // Addresses provided (display only)
-      const BTC_ADDRESS = 'bc1qguvzp38e4065dugw53hwxpuvtxf9tcmpe0yccv';
-      const USDT_ADDRESS = 'TPvJmf6ujpLQ3FoLXkZXyTPD8CtcJcuAdU';
-      const WHATSAPP_LINK = 'https://wa.me/+17302292192';
-
-      // DOM references
-      const plansPanel = document.getElementById('plans-panel');
-      const modalRoot = document.getElementById('modal-root');
-      const modal = document.getElementById('modal');
-      const fundBtn = document.getElementById('fund-account-btn');
-      const openRegBtns = document.querySelectorAll('#open-register, #open-register-2');
-      const openLoginBtns = document.querySelectorAll('#open-login, #open-login-2');
-      const topNav = document.getElementById('top-nav');
-      const welcomeText = document.getElementById('welcome-text');
-      const authPanel = document.getElementById('auth-panel');
-      const authActions = document.getElementById('auth-actions');
-      const accountInfo = document.getElementById('account-info');
-      const acctName = document.getElementById('acct-name');
-      const acctEmail = document.getElementById('acct-email');
-      const logoutBtn = document.getElementById('logout-btn');
-      const usdBalance = document.getElementById('usd-balance');
-      const coinsList = document.getElementById('coins-list');
-
-      // simple storage helpers
-      function getUsers(){ try { return JSON.parse(localStorage.getItem('demo_users')||'[]'); } catch(e){ return [] } }
-      function setUsers(u){ localStorage.setItem('demo_users', JSON.stringify(u)); }
-      function getSession(){ try { return JSON.parse(sessionStorage.getItem('demo_session')||'null'); } catch(e){ return null } }
-      function setSession(s){ sessionStorage.setItem('demo_session', JSON.stringify(s)); }
-      function clearSession(){ sessionStorage.removeItem('demo_session'); }
-
-      // render plans
-      function renderPlans(){
-        plansPanel.innerHTML = '';
-        plans.forEach(p=>{
-          const btn = document.createElement('div');
-          btn.className = 'plan';
-          btn.dataset.id = p.id;
-          btn.innerHTML = `<div style="font-weight:700">${p.label}</div><div class="small-muted">${p.min>0? 'Minimum: $'+p.min:''}</div>`;
-          btn.addEventListener('click', ()=>openFundFlow(p));
-          plansPanel.appendChild(btn);
-        });
-      }
-
-      // open fund modal
-      function openFundFlow(plan){
-        modalRoot.style.display = 'flex';
-        modal.innerHTML = `
-          <h2>Fund Account — Preview</h2>
-          <div class="small-muted">Selected plan</div>
-          <div style="margin-top:12px" class="card">
-            <div style="display:flex;justify-content:space-between;align-items:center">
-              <div>
-                <div style="font-weight:800">${plan.label}</div>
-                <div class="small-muted">This is a demo flow. No payments processed.</div>
-              </div>
-              <div style="text-align:right">
-                <div class="small-muted">Estimated</div>
-                <div style="font-weight:700">${plan.min>0? '$'+plan.min:'Varies'}</div>
-              </div>
-            </div>
-          </div>
-
-          <div style="margin-top:12px" class="small-muted">Choose deposit method</div>
-          <div style="display:flex;gap:8px;margin-top:8px">
-            <button class="btn" id="use-btc">Deposit BTC</button>
-            <button class="btn ghost" id="use-usdt">Deposit USDT</button>
-          </div>
-
-          <div style="margin-top:14px;display:flex;gap:10px;align-items:center">
-            <button class="btn ghost" id="close-modal">Close</button>
-          </div>
-        `;
-
-        modal.querySelector('#close-modal').addEventListener('click', closeModal);
-        modal.querySelector('#use-btc').addEventListener('click', ()=>startSpinThenShowAddress('BTC', plan));
-        modal.querySelector('#use-usdt').addEventListener('click', ()=>startSpinThenShowAddress('USDT', plan));
-      }
-
-      function closeModal(){
-        modalRoot.style.display = 'none';
-        modal.innerHTML = '';
-      }
-
-      // spinner then show deposit details
-      function startSpinThenShowAddress(method, plan){
-        modal.innerHTML = `
-          <div class="center" style="flex-direction:column;gap:12px">
-            <div class="logo-spin" id="spinLogo">EV</div>
-            <div class="small-muted">Preparing deposit instructions — please wait</div>
-          </div>
-        `;
-        // add spin class for animation
-        const logoEl = document.getElementById('spinLogo');
-        logoEl.classList.add('spin');
-
-        // spin for 6 seconds
-        setTimeout(()=>{
-          // replace with deposit details
-          modal.innerHTML = `
-            <h2>Deposit Instructions</h2>
-            <div class="small-muted">Method: ${method}</div>
-            <div style="margin-top:12px" class="card">
-              <div style="display:flex;justify-content:space-between;align-items:center">
-                <div>
-                  <div style="font-weight:800">${method === 'BTC' ? 'Bitcoin (BTC)' : 'USDT (TRC20/OMNI/ETH – confirm network)'}</div>
-                  <div class="small-muted">Send exactly the amount shown to the address below</div>
-                </div>
-              </div>
-
-              <div style="margin-top:12px">
-                <div class="small-muted">Deposit Address</div>
-                <div style="margin-top:8px;display:flex;gap:8px;align-items:center">
-                  <div class="copy" id="address-box" style="flex:1;overflow-wrap:anywhere">${method==='BTC'? '${BTC}':'${USDT}'}</div>
-                  <button class="btn ghost" id="copy-address">Copy</button>
-                </div>
-                <div class="small-muted" style="margin-top:8px">After sending, upload a screenshot of your transaction below and click "I have paid — confirm my deposit".</div>
-                <div style="margin-top:10px">
-                  <input type="file" id="payment-screenshot" accept="image/*" />
-                  <img id="screenshot-preview" class="preview hidden" alt="screenshot preview" />
-                </div>
-                <div style="margin-top:12px" class="row">
-                  <button class="btn" id="confirm-paid">I have paid — confirm my deposit</button>
-                  <button class="btn ghost" id="cancel-deposit">Cancel</button>
-                </div>
-              </div>
-            </div>
-          `;
-          // replace placeholders safely
-          const addressBox = modal.querySelector('#address-box');
-          addressBox.textContent = method==='BTC' ? BTC_ADDRESS : USDT_ADDRESS;
-
-          modal.querySelector('#copy-address').addEventListener('click', ()=>{
-            navigator.clipboard && navigator.clipboard.writeText(addressBox.textContent).then(()=>{
-              alert('Address copied to clipboard (demo).');
-            }).catch(()=>{ alert('Copy failed — please select and copy manually.'); });
-          });
-
-          const fileInput = modal.querySelector('#payment-screenshot');
-          const preview = modal.querySelector('#screenshot-preview');
-          fileInput.addEventListener('change', (ev)=>{
-            const file = ev.target.files[0];
-            if(!file) return;
-            const url = URL.createObjectURL(file);
-            preview.src = url;
-            preview.classList.remove('hidden');
-          });
-
-          modal.querySelector('#cancel-deposit').addEventListener('click', closeModal);
-
-          modal.querySelector('#confirm-paid').addEventListener('click', ()=>{
-            // require a screenshot in demo to proceed
-            const file = fileInput.files[0];
-            if(!file){
-              if(!confirm('No screenshot uploaded. Proceed anyway in demo?')) return;
-            }
-            // show loading 10s then redirect to WhatsApp (demo support)
-            modal.innerHTML = `
-              <div class="center" style="flex-direction:column;gap:12px">
-                <div class="logo-spin" style="width:90px;height:90px; border-radius:12px">EV</div>
-                <div class="small-muted">Confirming deposit — this is a simulated confirmation. You will be redirected to support after completion.</div>
-                <div class="small-muted">Please wait...</div>
-              </div>
-            `;
-            setTimeout(()=>{
-              // close and redirect
-              closeModal();
-              // Redirect to WhatsApp support link (opens in new tab)
-              window.open('${WHATSAPP_LINK}', '_blank');
-            }, 10000);
-          });
-
-        }, 6000);
-      }
-
-      // AUTH UI
-      function openRegisterModal(){
-        modalRoot.style.display = 'flex';
-        modal.innerHTML = `
-          <h2>Create Demo Account</h2>
-          <div class="small-muted">This demo stores accounts locally in your browser (localStorage). Do not use real credentials.</div>
-          <div style="margin-top:12px">
-            <div class="field"><label class="small-muted">Full name</label><input id="reg-name" type="text" placeholder="Jane Doe" /></div>
-            <div class="field"><label class="small-muted">Email</label><input id="reg-email" type="email" placeholder="name@example.com" /></div>
-            <div class="field"><label class="small-muted">Password</label><input id="reg-pass" type="password" placeholder="password" /></div>
-            <div style="display:flex;gap:8px">
-              <button class="btn" id="create-account">Create account</button>
-              <button class="btn ghost" id="close-modal-2">Cancel</button>
-            </div>
-          </div>
-        `;
-        modal.querySelector('#close-modal-2').addEventListener('click', closeModal);
-        modal.querySelector('#create-account').addEventListener('click', ()=>{
-          const name = modal.querySelector('#reg-name').value.trim();
-          const email = modal.querySelector('#reg-email').value.trim().toLowerCase();
-          const pass = modal.querySelector('#reg-pass').value;
-          if(!name || !email || !pass){ alert('Please complete all fields.'); return; }
-          const users = getUsers();
-          if(users.find(u=>u.email === email)){ alert('An account with that email already exists. Please log in.'); return; }
-          users.push({name, email, pass, createdAt: new Date().toISOString(), balanceUSD:0, holdings:{BTC:0,ETH:0,USDT:0,BNB:0}});
-          setUsers(users);
-          closeModal();
-          alert('Account created (demo). You may now log in.');
-        });
-      }
-
-      function openLoginModal(){
-        modalRoot.style.display = 'flex';
-        modal.innerHTML = `
-          <h2>Sign In</h2>
-          <div class="small-muted">Use the demo account you created.</div>
-          <div style="margin-top:12px">
-            <div class="field"><label class="small-muted">Email</label><input id="login-email" type="email" placeholder="name@example.com" /></div>
-            <div class="field"><label class="small-muted">Password</label><input id="login-pass" type="password" placeholder="password" /></div>
-            <div style="display:flex;gap:8px">
-              <button class="btn" id="do-login">Sign In</button>
-              <button class="btn ghost" id="close-modal-3">Cancel</button>
-            </div>
-          </div>
-        `;
-        modal.querySelector('#close-modal-3').addEventListener('click', closeModal);
-        modal.querySelector('#do-login').addEventListener('click', ()=>{
-          const email = modal.querySelector('#login-email').value.trim().toLowerCase();
-          const pass = modal.querySelector('#login-pass').value;
-          const users = getUsers();
-          const u = users.find(x=>x.email === email && x.pass === pass);
-          if(!u){ alert('Invalid credentials (demo).'); return; }
-          setSession({email:u.email});
-          closeModal();
-          refreshAuthUI();
-        });
-      }
-
-      function refreshAuthUI(){
-        const s = getSession();
-        if(!s){ // logged out
-          authActions.style.display = 'block';
-          accountInfo.classList.add('hidden');
-          welcomeText.textContent = 'Welcome — please register or log in';
-          usdBalance.textContent = '$0.00';
-        } else {
-          const users = getUsers();
-          const user = users.find(u=>u.email === s.email);
-          acctName.textContent = user.name;
-          acctEmail.textContent = user.email;
-          authActions.style.display = 'none';
-          accountInfo.classList.remove('hidden');
-          welcomeText.textContent = 'Signed in as '+user.name;
-          usdBalance.textContent = '$' + Number(user.balanceUSD || 0).toFixed(2);
-          // mini holdings show
-          const mini = document.getElementById('mini-holdings');
-          mini.innerHTML = `
-            <div class="small-muted">BTC: ${Number(user.holdings.BTC||0).toFixed(8)}</div>
-            <div class="small-muted">ETH: ${Number(user.holdings.ETH||0).toFixed(8)}</div>
-            <div class="small-muted">USDT: ${Number(user.holdings.USDT||0).toFixed(2)}</div>
-          `;
+        .paypal-gradient { /* keep visual style but renamed conceptually for Tesla brand blue */
+            background: linear-gradient(135deg, #0b4a6f 0%, #0f6aa3 100%);
         }
-      }
+        .btn-gradient {
+            background: linear-gradient(135deg, #0f6aa3 0%, #0b4a6f 100%);
+        }
 
-      logoutBtn.addEventListener('click', ()=>{
-        clearSession();
-        refreshAuthUI();
-      });
+        .face-scan-ring {
+            stroke-dasharray: 440;
+            stroke-dashoffset: 440;
+            transition: stroke-dashoffset 0.1s linear;
+        }
 
-      // wire up
-      renderPlans();
-      refreshAuthUI();
+        @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .animate-spin-slow { animation: rotate 3s linear infinite; }
 
-      fundBtn.addEventListener('click', ()=> {
-        // open plan selection modal
-        modalRoot.style.display = 'flex';
-        modal.innerHTML = `
-          <h2>Choose an Investment Plan</h2>
-          <div class="small-muted">Select a plan to simulate funding. Demo only.</div>
-          <div style="margin-top:12px" id="modal-plans" class="plan-btn"></div>
-          <div style="margin-top:12px"><button class="btn ghost" id="close-modal-4">Close</button></div>
-        `;
-        const modalPlans = modal.querySelector('#modal-plans');
-        plans.forEach(p=>{
-          const el = document.createElement('div');
-          el.className = 'plan';
-          el.style.minWidth = '220px';
-          el.innerHTML = `<div style="font-weight:700">${p.label}</div><div class="small-muted">${p.min>0? 'Minimum: $'+p.min:''}</div>`;
-          el.addEventListener('click', ()=>{ closeModal(); openFundFlow(p); });
-          modalPlans.appendChild(el);
+        .congrats-popup {
+            animation: bounce-in 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+        }
+        @keyframes bounce-in {
+            0% { transform: scale(0.3); opacity: 0; }
+            50% { transform: scale(1.05); opacity: 1; }
+            70% { transform: scale(0.9); }
+            100% { transform: scale(1); }
+        }
+
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(255,255,255,0.03); }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(15,106,163,0.4); border-radius: 10px; }
+
+        /* gear animation */
+        .gear {
+            width: 96px;
+            height: 96px;
+            display: inline-block;
+            animation: spin-gear 6s linear;
+            animation-fill-mode: forwards;
+        }
+        @keyframes spin-gear {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(2160deg); } /* 6 full turns */
+        }
+
+        .hidden-by-default { display: none; }
+
+        .timer-ring { transition: stroke-dashoffset 1s linear; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen">
+
+<script>lucide && lucide.createIcons && lucide.createIcons();</script>
+
+<!-- REGISTRATION / LOGIN -->
+<div id="register-section" class="min-h-screen flex items-center justify-center p-6">
+    <div class="w-full max-w-2xl bg-slate-900 rounded-[24px] shadow-2xl border border-white/10 overflow-hidden">
+        <div class="paypal-gradient h-1.5 w-full"></div>
+        <div class="p-10 grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="space-y-6">
+                <div class="mx-auto w-20 h-20 bg-white rounded-full flex items-center justify-center border border-white/10">
+                    <svg viewBox="0 0 24 24" class="w-10 h-10 fill-[#0b4a6f]">
+                        <path d="M12 2L20 6v6c0 5-4 9-8 9s-8-4-8-9V6l8-4z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold uppercase tracking-tight">T Stock — Tesla Personal Plans</h1>
+                    <p class="text-slate-400 text-sm mt-2">Register to view Tesla personal investment plans and manage your funds.</p>
+                </div>
+
+                <div class="space-y-3">
+                    <label class="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Full name</label>
+                    <input id="reg-name" type="text" placeholder="John Doe" class="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-sm focus:border-blue-500 outline-none" />
+                    <label class="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Email</label>
+                    <input id="reg-email" type="email" placeholder="you@example.com" class="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-sm focus:border-blue-500 outline-none" />
+                    <label class="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Password</label>
+                    <input id="reg-password" type="password" placeholder="••••••••" class="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-sm focus:border-blue-500 outline-none" />
+                </div>
+
+                <div>
+                    <button onclick="registerUser()" class="btn-gradient w-full text-white font-bold py-3 rounded-2xl shadow-xl hover:opacity-90 transition-all text-lg tracking-widest uppercase">
+                        CREATE ACCOUNT
+                    </button>
+                </div>
+            </div>
+
+            <div class="bg-slate-800 p-6 rounded-xl border border-white/5">
+                <h3 class="text-xl font-bold mb-4 uppercase">Tesla Personal Plans — Overview</h3>
+                <p class="text-slate-400 text-sm mb-4">Minimum Investment: <span class="font-bold">$500</span></p>
+
+                <div class="space-y-3 max-h-[380px] overflow-y-auto pr-2 custom-scrollbar">
+                    <!-- Plans list -->
+                    <div class="p-4 bg-white/5 rounded-xl border border-white/5 flex items-center justify-between">
+                        <div>
+                            <div class="font-bold">INVEST $500</div>
+                            <div class="text-slate-400 text-sm">Return: <span class="text-blue-300 font-bold">$5,000</span></div>
+                        </div>
+                        <div class="text-xs text-slate-400">Personal</div>
+                    </div>
+
+                    <div class="p-4 bg-white/5 rounded-xl border border-white/5 flex items-center justify-between">
+                        <div>
+                            <div class="font-bold">INVEST $1,000</div>
+                            <div class="text-slate-400 text-sm">Return: <span class="text-blue-300 font-bold">$15,000</span></div>
+                        </div>
+                        <div class="text-xs text-slate-400">Personal</div>
+                    </div>
+
+                    <div class="p-4 bg-white/5 rounded-xl border border-white/5 flex items-center justify-between">
+                        <div>
+                            <div class="font-bold">INVEST $2,000</div>
+                            <div class="text-slate-400 text-sm">Return: <span class="text-blue-300 font-bold">$30,000</span></div>
+                        </div>
+                        <div class="text-xs text-slate-400">Personal</div>
+                    </div>
+
+                    <div class="p-4 bg-white/5 rounded-xl border border-white/5 flex items-center justify-between">
+                        <div>
+                            <div class="font-bold">INVEST $3,000</div>
+                            <div class="text-slate-400 text-sm">Return: <span class="text-blue-300 font-bold">$45,000</span></div>
+                        </div>
+                        <div class="text-xs text-slate-400">Personal</div>
+                    </div>
+
+                    <div class="p-4 bg-white/5 rounded-xl border border-white/5 flex items-center justify-between">
+                        <div>
+                            <div class="font-bold">INVEST $4,000</div>
+                            <div class="text-slate-400 text-sm">Return: <span class="text-blue-300 font-bold">$60,000</span></div>
+                        </div>
+                        <div class="text-xs text-slate-400">Personal</div>
+                    </div>
+
+                    <div class="p-4 bg-white/5 rounded-xl border border-white/5 flex items-center justify-between">
+                        <div>
+                            <div class="font-bold">INVEST $5,000</div>
+                            <div class="text-slate-400 text-sm">Return: <span class="text-blue-300 font-bold">$75,000</span></div>
+                        </div>
+                        <div class="text-xs text-slate-400">Personal</div>
+                    </div>
+
+                    <div class="p-4 bg-white/5 rounded-xl border border-white/5 flex items-center justify-between">
+                        <div>
+                            <div class="font-bold">INVEST $10,000</div>
+                            <div class="text-slate-400 text-sm">Return: <span class="text-blue-300 font-bold">$150,000</span></div>
+                        </div>
+                        <div class="text-xs text-slate-400">Personal</div>
+                    </div>
+
+                    <hr class="border-white/5 my-2" />
+
+                    <div class="text-sm">
+                        <div class="font-bold">Crypto Plans</div>
+                        <div class="text-slate-400 mt-2 text-xs">
+                            <div>1 BTC → earn 5 BTC</div>
+                            <div>2 BTC → earn 10 BTC</div>
+                            <div>3 BTC → earn 15 BTC</div>
+                            <div>4 BTC → earn 20 BTC</div>
+                            <div>5 BTC → earn 25 BTC</div>
+                        </div>
+                        <p class="text-slate-400 text-xs mt-4">All plans require a minimum investment of $500.</p>
+                    </div>
+                </div>
+
+                <div class="mt-6">
+                    <button onclick="showPlansPage()" class="w-full btn-gradient py-2 rounded-xl font-bold uppercase">Explore Plans</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard-section" class="hidden min-h-screen">
+    <div id="congrats-popup" class="hidden fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+        <div class="congrats-popup bg-slate-900 rounded-[24px] p-8 text-center border border-white/10 max-w-md space-y-4">
+            <div class="w-16 h-16 bg-blue-500/20 text-blue-500 rounded-full flex items-center justify-center mx-auto shadow-2xl">
+                <i data-lucide="shield-check" class="w-8 h-8"></i>
+            </div>
+            <div>
+                <h3 class="text-xl font-bold uppercase">Account Created</h3>
+                <p class="text-slate-400">Welcome to T Stock. You can explore investment plans and fund your account.</p>
+            </div>
+            <button onclick="dismissCongrats()" class="mt-2 btn-gradient w-full text-white font-bold py-2 rounded-2xl text-sm uppercase">Continue to Dashboard</button>
+        </div>
+    </div>
+
+    <nav class="bg-slate-900/50 backdrop-blur-md border-b border-white/5 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <i data-lucide="trending-up" class="w-8 h-8 text-blue-400"></i>
+                <span class="font-bold text-xl tracking-tighter uppercase">T Stock — Tesla Plans</span>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="flex items-center gap-3 bg-white/5 px-4 py-2 rounded-2xl border border-white/10">
+                    <div id="user-avatar-small" class="w-8 h-8 rounded-full bg-slate-800 overflow-hidden border border-white/20"></div>
+                    <span id="nav-user-name" class="text-xs font-bold text-slate-400 tracking-wider">Guest</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-6 py-10 space-y-10">
+        <div class="bg-slate-900 rounded-[24px] p-6 border border-white/10 shadow-2xl relative overflow-hidden flex flex-col lg:flex-row gap-6 items-center justify-between">
+            <div>
+                <p class="text-slate-400 font-bold uppercase tracking-[0.2em] text-xs">Total Holdings</p>
+                <h2 id="dashboard-balance" class="text-5xl font-bold tracking-tighter leading-none">$0.00</h2>
+                <p class="text-slate-400 text-sm mt-2">Status: <span id="status-tag" class="text-green-400 font-bold">Unverified</span></p>
+            </div>
+
+            <div class="flex items-center gap-4">
+                <button onclick="openFundModal()" class="bg-white/5 hover:bg-white/10 text-white font-bold px-6 py-3 rounded-2xl border border-white/10 transition-all text-sm uppercase tracking-widest">
+                    Fund Account
+                </button>
+                <button onclick="openPlansSection()" class="btn-gradient text-white font-bold px-6 py-3 rounded-2xl shadow-2xl hover:scale-105 transition-all text-sm uppercase tracking-widest">
+                    View Plans
+                </button>
+            </div>
+        </div>
+
+        <div id="plans-section" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Plan cards -->
+            <div class="bg-slate-900 rounded-[16px] p-6 border border-white/10">
+                <h3 class="text-xl font-bold mb-4 uppercase">INVEST $500</h3>
+                <p class="text-slate-400">Get <span class="text-blue-300 font-bold">$5,000</span></p>
+                <p class="text-slate-500 text-xs mt-2">Min $500</p>
+                <div class="mt-4 flex gap-2">
+                    <button onclick="selectPlan(500, '$5,000', 'INVEST $500')" class="w-full btn-gradient py-2 rounded-lg font-bold text-sm">Select Plan</button>
+                </div>
+            </div>
+
+            <div class="bg-slate-900 rounded-[16px] p-6 border border-white/10">
+                <h3 class="text-xl font-bold mb-4 uppercase">INVEST $1,000</h3>
+                <p class="text-slate-400">Get <span class="text-blue-300 font-bold">$15,000</span></p>
+                <p class="text-slate-500 text-xs mt-2">Min $500</p>
+                <div class="mt-4 flex gap-2">
+                    <button onclick="selectPlan(1000, '$15,000', 'INVEST $1,000')" class="w-full btn-gradient py-2 rounded-lg font-bold text-sm">Select Plan</button>
+                </div>
+            </div>
+
+            <div class="bg-slate-900 rounded-[16px] p-6 border border-white/10">
+                <h3 class="text-xl font-bold mb-4 uppercase">INVEST $2,000</h3>
+                <p class="text-slate-400">Get <span class="text-blue-300 font-bold">$30,000</span></p>
+                <p class="text-slate-500 text-xs mt-2">Min $500</p>
+                <div class="mt-4 flex gap-2">
+                    <button onclick="selectPlan(2000, '$30,000', 'INVEST $2,000')" class="w-full btn-gradient py-2 rounded-lg font-bold text-sm">Select Plan</button>
+                </div>
+            </div>
+
+            <div class="bg-slate-900 rounded-[16px] p-6 border border-white/10">
+                <h3 class="text-xl font-bold mb-4 uppercase">INVEST $3,000</h3>
+                <p class="text-slate-400">Get <span class="text-blue-300 font-bold">$45,000</span></p>
+                <p class="text-slate-500 text-xs mt-2">Min $500</p>
+                <div class="mt-4 flex gap-2">
+                    <button onclick="selectPlan(3000, '$45,000', 'INVEST $3,000')" class="w-full btn-gradient py-2 rounded-lg font-bold text-sm">Select Plan</button>
+                </div>
+            </div>
+
+            <div class="bg-slate-900 rounded-[16px] p-6 border border-white/10">
+                <h3 class="text-xl font-bold mb-4 uppercase">INVEST $4,000</h3>
+                <p class="text-slate-400">Get <span class="text-blue-300 font-bold">$60,000</span></p>
+                <p class="text-slate-500 text-xs mt-2">Min $500</p>
+                <div class="mt-4 flex gap-2">
+                    <button onclick="selectPlan(4000, '$60,000', 'INVEST $4,000')" class="w-full btn-gradient py-2 rounded-lg font-bold text-sm">Select Plan</button>
+                </div>
+            </div>
+
+            <div class="bg-slate-900 rounded-[16px] p-6 border border-white/10">
+                <h3 class="text-xl font-bold mb-4 uppercase">INVEST $5,000</h3>
+                <p class="text-slate-400">Get <span class="text-blue-300 font-bold">$75,000</span></p>
+                <p class="text-slate-500 text-xs mt-2">Min $500</p>
+                <div class="mt-4 flex gap-2">
+                    <button onclick="selectPlan(5000, '$75,000', 'INVEST $5,000')" class="w-full btn-gradient py-2 rounded-lg font-bold text-sm">Select Plan</button>
+                </div>
+            </div>
+
+            <div class="bg-slate-900 rounded-[16px] p-6 border border-white/10">
+                <h3 class="text-xl font-bold mb-4 uppercase">INVEST $10,000</h3>
+                <p class="text-slate-400">Get <span class="text-blue-300 font-bold">$150,000</span></p>
+                <p class="text-slate-500 text-xs mt-2">Min $500</p>
+                <div class="mt-4 flex gap-2">
+                    <button onclick="selectPlan(10000, '$150,000', 'INVEST $10,000')" class="w-full btn-gradient py-2 rounded-lg font-bold text-sm">Select Plan</button>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- FUNDING MODAL (multi-step flow) -->
+<div id="fund-modal" class="hidden fixed inset-0 z-[400] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+    <div class="bg-slate-900 w-full max-w-2xl rounded-[24px] border border-white/10 overflow-hidden">
+        <div class="p-6 border-b border-white/5 flex justify-between items-center">
+            <div>
+                <h3 id="fund-title" class="text-xl font-bold uppercase">Fund Account</h3>
+                <p class="text-slate-400 text-xs">Select a plan and follow deposit instructions to fund your account</p>
+            </div>
+            <div>
+                <button onclick="closeFundModal()" class="text-slate-400 hover:text-white">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+        </div>
+
+        <div id="step-choose" class="p-6 space-y-4">
+            <div>
+                <h4 class="font-bold">Choose a plan</h4>
+                <p class="text-slate-400 text-xs mt-1">Pick whichever plan you'd like to fund now.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <!-- Small plan cards with click -->
+                <button onclick="selectPlanFromModal(500, '$5,000', 'INVEST $500')" class="p-4 bg-white/5 rounded-xl border border-white/5 text-left">
+                    <div class="font-bold">INVEST $500</div>
+                    <div class="text-slate-400 text-xs">Get $5,000</div>
+                </button>
+
+                <button onclick="selectPlanFromModal(1000, '$15,000', 'INVEST $1,000')" class="p-4 bg-white/5 rounded-xl border border-white/5 text-left">
+                    <div class="font-bold">INVEST $1,000</div>
+                    <div class="text-slate-400 text-xs">Get $15,000</div>
+                </button>
+
+                <button onclick="selectPlanFromModal(2000, '$30,000', 'INVEST $2,000')" class="p-4 bg-white/5 rounded-xl border border-white/5 text-left">
+                    <div class="font-bold">INVEST $2,000</div>
+                    <div class="text-slate-400 text-xs">Get $30,000</div>
+                </button>
+
+                <button onclick="selectPlanFromModal(3000, '$45,000', 'INVEST $3,000')" class="p-4 bg-white/5 rounded-xl border border-white/5 text-left">
+                    <div class="font-bold">INVEST $3,000</div>
+                    <div class="text-slate-400 text-xs">Get $45,000</div>
+                </button>
+
+                <button onclick="selectPlanFromModal(4000, '$60,000', 'INVEST $4,000')" class="p-4 bg-white/5 rounded-xl border border-white/5 text-left">
+                    <div class="font-bold">INVEST $4,000</div>
+                    <div class="text-slate-400 text-xs">Get $60,000</div>
+                </button>
+
+                <button onclick="selectPlanFromModal(5000, '$75,000', 'INVEST $5,000')" class="p-4 bg-white/5 rounded-xl border border-white/5 text-left">
+                    <div class="font-bold">INVEST $5,000</div>
+                    <div class="text-slate-400 text-xs">Get $75,000</div>
+                </button>
+
+                <button onclick="selectPlanFromModal(10000, '$150,000', 'INVEST $10,000')" class="p-4 bg-white/5 rounded-xl border border-white/5 text-left">
+                    <div class="font-bold">INVEST $10,000</div>
+                    <div class="text-slate-400 text-xs">Get $150,000</div>
+                </button>
+            </div>
+
+            <div class="flex justify-end">
+                <button id="choose-next" onclick="goToConfirmPlan()" class="btn-gradient py-2 px-6 rounded-xl font-bold uppercase">Next</button>
+            </div>
+        </div>
+
+        <div id="step-confirm" class="hidden p-6 space-y-4">
+            <div>
+                <h4 class="font-bold">Confirm Plan</h4>
+                <p class="text-slate-400 text-xs">Plan: <span id="confirm-plan-name" class="font-bold"></span> • Amount: <span id="confirm-plan-amt" class="text-blue-300 font-bold"></span></p>
+            </div>
+
+            <div class="space-y-2">
+                <label class="text-xs text-slate-400">Preferred deposit method</label>
+                <select id="deposit-method" class="w-full bg-black/40 border border-white/10 rounded-xl p-2">
+                    <option value="BTC">BTC</option>
+                    <option value="USDT">USDT (TRC20)</option>
+                </select>
+            </div>
+
+            <div class="flex justify-between">
+                <button onclick="backToChoose()" class="bg-white/5 px-4 py-2 rounded-xl border border-white/5">Back</button>
+                <button onclick="startDepositProcess()" class="btn-gradient px-6 py-2 rounded-xl font-bold uppercase">Proceed to Deposit</button>
+            </div>
+        </div>
+
+        <div id="step-processing-gear" class="hidden p-6 text-center space-y-4">
+            <div>
+                <h4 class="font-bold">Preparing deposit instructions</h4>
+                <p class="text-slate-400 text-xs">We are generating your secure deposit details — this takes a few seconds.</p>
+            </div>
+
+            <div id="gear-wrap" class="py-6">
+                <!-- SVG gear -->
+                <svg class="gear mx-auto" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M492 308l-42-24 7-48-44-25-26 17-34-14-14-35-45 2-25-44-48 7-23-40-48 23-8 48-46 24 5 48-30 26 23 41-7 46 39 14 10 33 44-4 25 44 48-7 26 34 45-18 14-35 34 13 26-17 44 24 7-48 42-24-20-40z" stroke="#0f6aa3" stroke-width="6" fill="rgba(15,106,163,0.08)"/>
+                    <circle cx="256" cy="256" r="80" fill="rgba(15,106,163,0.15)" stroke="#0f6aa3" stroke-width="6"/>
+                </svg>
+                <div class="text-slate-400 text-xs mt-3">Please wait — preparing secure deposit addresses...</div>
+            </div>
+        </div>
+
+        <div id="step-deposit" class="hidden p-6 space-y-4">
+            <div>
+                <h4 class="font-bold">Deposit Instructions</h4>
+                <p class="text-slate-400 text-xs">Send the exact plan amount to either the BTC or USDT address below, then upload your payment screenshot and confirm.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="p-4 bg-white/5 rounded-xl border border-white/5">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <div class="font-bold">BTC (Bech32)</div>
+                            <div class="text-slate-400 text-xs mt-1">Address</div>
+                        </div>
+                        <button onclick="copyToClipboard('bc1qguvzp38e4065dugw53hwxpuvtxf9tcmpe0yccv')" class="text-slate-300 text-sm">Copy</button>
+                    </div>
+                    <div class="mt-3 font-mono text-xs break-all">bc1qguvzp38e4065dugw53hwxpuvtxf9tcmpe0yccv</div>
+                </div>
+
+                <div class="p-4 bg-white/5 rounded-xl border border-white/5">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <div class="font-bold">USDT (TRC20)</div>
+                            <div class="text-slate-400 text-xs mt-1">Address / Memo</div>
+                        </div>
+                        <button onclick="copyToClipboard('TPvJmf6ujpLQ3FoLXkZXyTPD8CtcJcuAdU')" class="text-slate-300 text-sm">Copy</button>
+                    </div>
+                    <div class="mt-3 font-mono text-xs break-all">TPvJmf6ujpLQ3FoLXkZXyTPD8CtcJcuAdU</div>
+                </div>
+            </div>
+
+            <div class="space-y-2">
+                <label class="text-xs text-slate-400">Upload payment screenshot</label>
+                <input id="payment-screenshot" type="file" accept="image/*" class="w-full bg-black/40 border border-white/10 rounded-xl p-2 text-sm" />
+                <div id="screenshot-preview" class="mt-2"></div>
+            </div>
+
+            <div class="flex justify-between items-center">
+                <button onclick="backToConfirm()" class="bg-white/5 px-4 py-2 rounded-xl border border-white/5">Back</button>
+                <button onclick="confirmDeposit()" class="btn-gradient px-6 py-2 rounded-xl font-bold uppercase">I HAVE PAID — Confirm my deposit</button>
+            </div>
+        </div>
+
+        <div id="step-final" class="hidden p-6 text-center space-y-4">
+            <div>
+                <h4 class="font-bold">Processing Confirmation</h4>
+                <p class="text-slate-400 text-xs">We are verifying your payment. You will be redirected to support after confirmation.</p>
+            </div>
+            <div class="py-6">
+                <i data-lucide="refresh-cw" class="w-12 h-12 text-blue-400 animate-spin mx-auto"></i>
+                <div class="text-slate-400 text-xs mt-3">Finalizing — please wait.</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // state
+    let currentUser = null;
+    let selectedPlan = null;
+
+    // registration function
+    function registerUser() {
+        const name = document.getElementById('reg-name').value.trim();
+        const email = document.getElementById('reg-email').value.trim();
+        const pass = document.getElementById('reg-password').value.trim();
+
+        if (!name || !email || !pass) {
+            alert('Please complete all registration fields.');
+            return;
+        }
+
+        // create minimal in-memory user
+        currentUser = {
+            name,
+            email,
+            balance: 0.00,
+        };
+
+        // update UI
+        document.getElementById('nav-user-name').innerText = name;
+        document.getElementById('dashboard-balance').innerText = '$' + currentUser.balance.toFixed(2);
+        document.getElementById('user-avatar-small').style.background = 'linear-gradient(135deg,#0f6aa3,#0b4a6f)';
+        document.getElementById('user-avatar-large')?.style && (document.getElementById('user-avatar-large').style.background = 'linear-gradient(135deg,#0f6aa3,#0b4a6f)');
+
+        // show dashboard, hide register
+        document.getElementById('register-section').classList.add('hidden');
+        document.getElementById('dashboard-section').classList.remove('hidden');
+
+        // show welcome popup
+        document.getElementById('congrats-popup').classList.remove('hidden');
+    }
+
+    function dismissCongrats() {
+        document.getElementById('congrats-popup').classList.add('hidden');
+    }
+
+    // Plans helpers
+    function showPlansPage() {
+        document.getElementById('plans-section').scrollIntoView({behavior: 'smooth'});
+    }
+
+    function selectPlan(amount, returnText, name) {
+        // pre-select and open fund modal
+        selectedPlan = { amount, returnText, name };
+        openFundModal();
+        // set the modal's selection
+        document.getElementById('confirm-plan-name').innerText = name;
+        document.getElementById('confirm-plan-amt').innerText = '$' + amount.toLocaleString();
+        // move directly to confirm step
+        document.getElementById('step-choose').classList.add('hidden');
+        document.getElementById('step-confirm').classList.remove('hidden');
+    }
+
+    /* FUND MODAL FLOW */
+    function openFundModal() {
+        // show modal and reset to choose step if no selectedPlan exists
+        document.getElementById('fund-modal').classList.remove('hidden');
+        if (!selectedPlan) {
+            document.getElementById('step-choose').classList.remove('hidden');
+            document.getElementById('step-confirm').classList.add('hidden');
+        }
+        document.getElementById('step-processing-gear').classList.add('hidden');
+        document.getElementById('step-deposit').classList.add('hidden');
+        document.getElementById('step-final').classList.add('hidden');
+        // If selectedPlan exists, reflect it in confirm UI
+        if (selectedPlan) {
+            document.getElementById('confirm-plan-name').innerText = selectedPlan.name;
+            document.getElementById('confirm-plan-amt').innerText = '$' + selectedPlan.amount.toLocaleString();
+        }
+    }
+
+    function closeFundModal() {
+        document.getElementById('fund-modal').classList.add('hidden');
+        // clear selectedPlan if you want
+        // selectedPlan = null;
+    }
+
+    function selectPlanFromModal(amount, returnTxt, name) {
+        selectedPlan = { amount, returnText: returnTxt, name };
+        document.getElementById('confirm-plan-name').innerText = name;
+        document.getElementById('confirm-plan-amt').innerText = '$' + amount.toLocaleString();
+    }
+
+    function goToConfirmPlan() {
+        if (!selectedPlan) {
+            alert('Please select a plan first.');
+            return;
+        }
+        document.getElementById('step-choose').classList.add('hidden');
+        document.getElementById('step-confirm').classList.remove('hidden');
+    }
+
+    function backToChoose() {
+        document.getElementById('step-confirm').classList.add('hidden');
+        document.getElementById('step-choose').classList.remove('hidden');
+    }
+
+    function startDepositProcess() {
+        // move to processing gear first
+        document.getElementById('step-confirm').classList.add('hidden');
+        document.getElementById('step-processing-gear').classList.remove('hidden');
+
+        // run a 6-second "professional gear" animation, then show deposit details
+        // The .gear SVG has a 6s animation defined in CSS; we'll wait for 6s then reveal deposit step
+        setTimeout(() => {
+            document.getElementById('step-processing-gear').classList.add('hidden');
+            document.getElementById('step-deposit').classList.remove('hidden');
+        }, 6000);
+    }
+
+    function backToConfirm() {
+        document.getElementById('step-deposit').classList.add('hidden');
+        document.getElementById('step-confirm').classList.remove('hidden');
+    }
+
+    function copyToClipboard(text) {
+        navigator.clipboard && navigator.clipboard.writeText(text).then(() => {
+            alert('Address copied to clipboard.');
+        }, () => {
+            // fallback
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+            alert('Address copied to clipboard.');
         });
-        modal.querySelector('#close-modal-4').addEventListener('click', closeModal);
-      });
+    }
 
-      openRegBtns.forEach(b=>b.addEventListener('click', openRegisterModal));
-      openLoginBtns.forEach(b=>b.addEventListener('click', openLoginModal));
+    // preview uploaded screenshot
+    document.getElementById('payment-screenshot')?.addEventListener('change', function (e) {
+        const file = e.target.files[0];
+        const preview = document.getElementById('screenshot-preview');
+        preview.innerHTML = '';
+        if (!file) return;
+        if (!file.type.startsWith('image/')) {
+            preview.innerText = 'Please upload an image file.';
+            return;
+        }
+        const reader = new FileReader();
+        reader.onload = function(ev) {
+            const img = document.createElement('img');
+            img.src = ev.target.result;
+            img.style.maxWidth = '240px';
+            img.style.borderRadius = '8px';
+            preview.appendChild(img);
+        };
+        reader.readAsDataURL(file);
+    });
 
-      // global close modal clicking backdrop
-      modalRoot.addEventListener('click', (e)=>{ if(e.target === modalRoot) closeModal(); });
+    function confirmDeposit() {
+        // ensure user uploaded something (not strict)
+        const input = document.getElementById('payment-screenshot');
+        if (!input || !input.files || input.files.length === 0) {
+            if (!confirm('No screenshot uploaded. Are you sure you want to continue?')) return;
+        }
 
-      // initialize with demo users array if missing
-      if(!localStorage.getItem('demo_users')) setUsers([]);
+        // move to final processing
+        document.getElementById('step-deposit').classList.add('hidden');
+        document.getElementById('step-final').classList.remove('hidden');
+
+        // Simulate 10-second verification then redirect to WhatsApp contact
+        setTimeout(() => {
+            // After processing, redirect to WhatsApp support
+            window.location.href = 'https://wa.me/+17302292192';
+        }, 10000);
+    }
+
+    // convenience helpers for small navigation
+    function startProcessingFromNav() {
+        openFundModal();
+    }
+
+    function openPlansSection() {
+        document.getElementById('plans-section').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // On initial load: hide elements that might be undefined in some states
+    (function init() {
+        // create user avatar-large element used by register UI but not present when dashboard hidden; add safe guard
+        if (!document.getElementById('user-avatar-large')) {
+            const large = document.createElement('div');
+            large.id = 'user-avatar-large';
+            large.className = 'w-40 h-40 rounded-full border-4 border-white/10 bg-slate-800 overflow-hidden shadow-2xl hidden';
+            document.body.appendChild(large);
+        }
     })();
-  </script>
+
+</script>
 </body>
 </html>
